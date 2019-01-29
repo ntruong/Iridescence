@@ -103,7 +103,7 @@ hex :: PixelRGB8 -> String
 hex (PixelRGB8 r g b) =
   let f x = showHex (fromIntegral x) ""
       p x = case (length . f) x of
-        1 -> "0" ++ (f x)
+        1 -> "0" ++ f x
         _ -> f x
   in  concat [p r, p g, p b]
 
@@ -118,7 +118,7 @@ app file = do
       let rawimg = (snd . palettize opts . convertRGB8) rgb
           rawcolors = sort (pixelFold (const . const . flip (:)) [] rawimg)
           colors :: [PixelRGB8]
-          colors = [darken 0.8 (head rawcolors)]
+          colors = [(lighten 0.1 . blend (PixelRGB8 0 0 0)) (head rawcolors)]
             ++ (saturate 0.5 . lighten 0.2 <$> rawcolors)
             ++ [blend (PixelRGB8 255 255 255) (last rawcolors)]
           lightcolors = lighten 0.2 <$> colors
