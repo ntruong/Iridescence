@@ -118,10 +118,16 @@ app file = do
       let rawimg = (snd . palettize opts . convertRGB8) rgb
           rawcolors = sort (pixelFold (const . const . flip (:)) [] rawimg)
           colors :: [PixelRGB8]
+          {-
           colors = [(lighten 0.1 . blend (PixelRGB8 0 0 0)) (head rawcolors)]
             ++ (saturate 0.5 . lighten 0.2 <$> rawcolors)
             ++ [blend (PixelRGB8 255 255 255) (last rawcolors)]
           lightcolors = lighten 0.2 <$> colors
+          -}
+          colors = [(lighten 0.1 . blend (PixelRGB8 255 255 255)) (last rawcolors)]
+            ++ reverse (saturate 0.5 . lighten 0.2 <$> rawcolors)
+            ++ [blend (PixelRGB8 0 0 0) (head rawcolors)]
+          lightcolors = darken 0.8 <$> colors
           theme = colors ++ lightcolors
           png = generateImage (const . (!!) theme) 16 1
       writeFile "colors.conf" $ concat (flip (++) "\n" . hex <$> theme)
