@@ -124,9 +124,9 @@ app file = do
             ++ [blend (PixelRGB8 255 255 255) (last rawcolors)]
           lightcolors = lighten 0.2 <$> colors
           -}
-          colors = [(lighten 0.1 . blend (PixelRGB8 255 255 255)) (last rawcolors)]
+          colors = [PixelRGB8 249 249 249]
             ++ reverse (saturate 0.5 . lighten 0.2 <$> rawcolors)
-            ++ [blend (PixelRGB8 0 0 0) (head rawcolors)]
+            ++ [PixelRGB8 20 20 20]
           lightcolors = darken 0.8 <$> colors
           theme = colors ++ lightcolors
           png = generateImage (const . (!!) theme) 16 1
