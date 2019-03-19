@@ -107,8 +107,8 @@ hex (PixelRGB8 r g b) =
         _ -> f x
   in  concat [p r, p g, p b]
 
-app :: FilePath -> IO ()
-app file = do
+app :: FilePath -> Bool -> IO ()
+app file light = do
   img <- readImage file
   case img of
     Left _ -> do
@@ -117,17 +117,19 @@ app file = do
     Right rgb -> do
       let rawimg = (snd . palettize opts . convertRGB8) rgb
           rawcolors = sort (pixelFold (const . const . flip (:)) [] rawimg)
-          colors :: [PixelRGB8]
-          {-
-          colors = [(lighten 0.1 . blend (PixelRGB8 0 0 0)) (head rawcolors)]
-            ++ (saturate 0.5 . lighten 0.2 <$> rawcolors)
-            ++ [blend (PixelRGB8 255 255 255) (last rawcolors)]
-          lightcolors = lighten 0.2 <$> colors
-          -}
-          colors = [PixelRGB8 249 249 249]
-            ++ reverse (saturate 0.5 . lighten 0.2 <$> rawcolors)
-            ++ [PixelRGB8 20 20 20]
-          lightcolors = darken 0.8 <$> colors
+          (colors, lightcolors) = case light of
+            False ->
+              ( [(lighten 0.1 . blend (PixelRGB8 0 0 0)) (head rawcolors)]
+                ++ (saturate 0.5 . lighten 0.2 <$> rawcolors)
+                ++ [blend (PixelRGB8 255 255 255) (last rawcolors)]
+              , lighten 0.2 <$> colors
+              )
+            True ->
+              ( [PixelRGB8 249 249 249]
+                ++ reverse (saturate 0.5 . lighten 0.2 <$> rawcolors)
+                ++ [PixelRGB8 20 20 20]
+              , darken 0.8 <$> colors
+              )
           theme = colors ++ lightcolors
           png = generateImage (const . (!!) theme) 16 1
       writeFile "colors.conf" $ concat (flip (++) "\n" . hex <$> theme)
